@@ -1,17 +1,20 @@
-<!-- ![Banner](./image.png) -->
-# Naïve Bayes  Classifier
-> Short blurb about what your product does.
+![Banner](./image.png)
 
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Creator101-commits/Naïve-Bayes- Classifier?include_prereleases)
-![GitHub last commit](https://img.shields.io/github/last-commit/Creator101-commits/Naïve-Bayes- Classifier)
-![GitHub issues](https://img.shields.io/github/issues-raw/Creator101-commits/Naïve-Bayes- Classifier)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/Creator101-commits/Naïve-Bayes- Classifier)
-![GitHub](https://img.shields.io/github/license/Creator101-commits/Naïve-Bayes- Classifier)
+# Naïve Bayes Classifier
 
-Brief one to two paragraph statement about your product and what it does.
+> A tested from-scratch implementation of Gaussian, Multinomial, and Bernoulli Naïve Bayes.
+
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Creator101-commits/Nai-ve-Bayes--Classifier?include_prereleases)
+![GitHub last commit](https://img.shields.io/github/last-commit/Creator101-commits/Nai-ve-Bayes--Classifier)
+![GitHub issues](https://img.shields.io/github/issues-raw/Creator101-commits/Nai-ve-Bayes--Classifier)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/Creator101-commits/Nai-ve-Bayes--Classifier)
+![GitHub](https://img.shields.io/github/license/Creator101-commits/Nai-ve-Bayes--Classifier)
+
+This repository contains the plan for a tested Python implementation of Gaussian, Multinomial, and Bernoulli Naïve Bayes. The project will verify the custom estimators against hand-calculated fixtures and scikit-learn reference behavior while measuring classification quality, calibration, numerical stability, and runtime.
 
 ## Table of Contents
-- [Naïve Bayes  Classifier](#product-name)
+
+- [Naïve Bayes Classifier](#naïve-bayes-classifier)
 - [Quickstart / Demo](#quickstart--demo)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -36,13 +39,13 @@ Add snippets here that your readers can copy-paste with one click.
 **macOS & Linux**
 
 ```sh
-npm install Naïve-Bayes- Classifier --save
+npm install my-module --save
 ```
 
 **Windows**
 
 ```sh
-npm install Naïve-Bayes- Classifier --save
+npm install my-module --save
 ```
 
 ## Usage
@@ -51,7 +54,7 @@ npm install Naïve-Bayes- Classifier --save
 Explain how to use your project here. Create subsections for different features or workflows so users can find what they need quickly.
 
 ```sh
-Naïve-Bayes- Classifier --help
+my-module --help
 ```
 
 ## Development
@@ -60,8 +63,8 @@ Naïve-Bayes- Classifier --help
 Instructions for setting up a local development environment so you can build and run the project from source.
 
 ```sh
-git clone https://github.com/Creator101-commits/Naïve-Bayes- Classifier.git
-cd Naïve-Bayes- Classifier
+git clone https://github.com/Creator101-commits/Nai-ve-Bayes--Classifier.git
+cd Nai-ve-Bayes--Classifier
 # install dependencies
 npm install
 # run in development mode
@@ -73,7 +76,7 @@ npm run dev
 
 Contributions are welcome. To propose a change:
 
-1. Fork it (<https://github.com/Creator101-commits/Naïve-Bayes- Classifier/fork>)
+1. Fork it (<https://github.com/Creator101-commits/Nai-ve-Bayes--Classifier/fork>)
 2. Create your feature branch (`git checkout -b feature/fooBar`)
 3. Commit your changes (`git commit -am 'Add some fooBar'`)
 4. Push to the branch (`git push origin feature/fooBar`)
@@ -84,8 +87,16 @@ Please make sure tests pass and the code is formatted before opening a PR.
 ## Release History
 [(Back to top)](#table-of-contents)
 
+* 0.2.1
+    * CHANGE: Update docs (module code remains unchanged)
+* 0.2.0
+    * CHANGE: Remove `setDefaultXYZ()`
+    * ADD: Add `init()`
+* 0.1.1
+    * FIX: Crash when calling `baz()` (Thanks @GenerousContributorName!)
 * 0.1.0
     * The first proper release
+    * CHANGE: Rename `foo()` to `bar()`
 * 0.0.1
     * Work in progress
 
@@ -97,6 +108,6 @@ Distributed under the MIT License. See [`LICENSE`](./LICENSE) for more informati
 ## Meta
 [(Back to top)](#table-of-contents)
 
-Sreeharsha Kannegundla – [@Creator101-commits](https://github.com/Creator101-commits)
+Sreeharsha Kannegundla – [@YourTwitter](https://twitter.com/YourTwitter) – YourEmail@example.com
 
-Project link: [https://github.com/Creator101-commits/Naïve-Bayes- Classifier](https://github.com/Creator101-commits/Naïve-Bayes- Classifier)
+Project link: [https://github.com/Creator101-commits/Nai-ve-Bayes--Classifier](https://github.com/Creator101-commits/Nai-ve-Bayes--Classifier)
