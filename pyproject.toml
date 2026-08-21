@@ -1,0 +1,52 @@
+[project]
+name = "naive-bayes"
+version = "0.1.0"
+description = "Tested from-scratch implementations of Gaussian, Multinomial, and Bernoulli Naive Bayes, verified against scikit-learn references."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Sreeharsha Kannegundla" }]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "numpy>=2.1",
+    "scipy>=1.14",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "typer>=0.12",
+]
+
+[project.scripts]
+naive-bayes = "naive_bayes.cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+    "mypy>=1.11",
+]
+
+[build-system]
+requires = ["uv_build>=0.8"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "naive_bayes"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=naive_bayes --cov-report=term-missing"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]
+
+[tool.coverage.run]
+branch = true

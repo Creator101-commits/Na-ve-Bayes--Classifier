@@ -24,3 +24,16 @@ venv/
 
 # Logs
 *.log
+
+# Project data and artifacts (kept out of Git per PLAN.md)
+data/
+artifacts/
+
+# uv / Python tooling
+.uv/
+*.egg-info/
+.coverage*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
