@@ -351,42 +351,52 @@ Commands must not be advertised in the README as working until their implementat
 ## Milestones
 
 ### 1. Reproducible Python skeleton
+**Status:** Complete.
 
 Create `pyproject.toml`, lock dependencies, add the `src/` package, establish the CLI, configure pytest, Ruff, mypy, coverage, and GitHub Actions, and add an appropriate `.gitignore`. Replace the existing README and AGENTS placeholders with accurate Python commands and project rules. Ship a clean-install CI job and one passing import test.
 
 ### 2. Shared estimator foundation
+**Status:** Complete.
 
 Implement label encoding, class priors, validation, fitted-state checks, stable log-sum-exp normalization, estimator parameters, and the shared API. Add hand-calculated tests for priors, posterior normalization, label order, and invalid inputs.
 
 ### 3. Gaussian Naïve Bayes
+**Status:** Complete.
 
 Implement class-feature means, variances, variance smoothing, joint log likelihood, prediction, and probabilities. Verify values on tiny arrays and compare against scikit-learn on fixed tabular datasets. Ship the first end-to-end model and benchmark table.
 
 ### 4. Multinomial Naïve Bayes
+**Status:** Complete.
 
 Implement dense and sparse feature counts, additive smoothing, log feature probabilities, and prediction. Test zero counts, invalid negative values, large counts, sparse inputs, and probability agreement. Ship a count-based text experiment.
 
 ### 5. Bernoulli Naïve Bayes
+**Status:** Complete.
 
 Implement binary feature likelihoods, absent-feature contributions, smoothing, and configurable binarization behavior. Test cases that distinguish Bernoulli from Multinomial predictions. Ship the shared text comparison.
 
 ### 6. Data and experiment pipeline
+**Status:** Complete.
 
 Implement public data acquisition, integrity manifests, duplicate-aware text splits, training-only vectorization, versioned configurations, result artifacts, and environment capture. Add integration tests proving preprocessing cannot fit on validation or test data.
 
 ### 7. Correctness and numerical-stability audit
+**Status:** Complete.
 
 Build systematic custom-versus-scikit comparisons, probability tolerances, extreme-value tests, constant-feature tests, sparse/dense parity tests, and serialization round trips. Document intentional differences rather than hiding them.
 
 ### 8. Controlled research experiments
+**Status:** Complete.
 
 Run smoothing, training-size, correlated-feature, and prior-sensitivity studies using frozen protocols. Save all declared seeds and results, including failed or neutral experiments. Produce calibration, performance, agreement, and runtime figures.
 
 ### 9. Frozen evaluation and failure analysis
+**Status:** Complete.
 
 Freeze datasets, partitions, configurations, metric code, and primary comparisons. Evaluate selected settings once on held-out test data, calculate uncertainty, and inspect errors by class, document length, vocabulary coverage, confidence, and feature conditions without retuning.
 
 ### 10. Final research artifact
+**Status:** Complete.
 
 Write a report containing the derivation, implementation decisions, test strategy, datasets, experiments, results, numerical behavior, limitations, and reproducibility instructions. Update the README and AGENTS file so they contain no placeholders, verify every documented command from a clean environment, and tag v1 only after tests, linting, typing, coverage, and report generation pass.
 
