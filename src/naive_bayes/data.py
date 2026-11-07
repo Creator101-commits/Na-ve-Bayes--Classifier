@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 from typing import Any
 
@@ -106,10 +107,41 @@ def load_sms_spam_dataset() -> tuple[list[str], list[str]]:
         "Congratulations! You won a guaranteed prize. Text CLAIM to 88882",
     ]
     labels = [
-        "ham", "ham", "spam", "ham", "ham", "spam", "ham", "ham", "spam", "spam",
-        "ham", "spam", "spam", "ham", "ham", "spam", "ham", "ham", "ham", "spam",
-        "ham", "ham", "ham", "ham", "ham", "ham", "ham", "ham", "ham", "ham",
-        "ham", "ham", "spam", "spam", "spam",
+        "ham",
+        "ham",
+        "spam",
+        "ham",
+        "ham",
+        "spam",
+        "ham",
+        "ham",
+        "spam",
+        "spam",
+        "ham",
+        "spam",
+        "spam",
+        "ham",
+        "ham",
+        "spam",
+        "ham",
+        "ham",
+        "ham",
+        "spam",
+        "ham",
+        "ham",
+        "ham",
+        "ham",
+        "ham",
+        "ham",
+        "ham",
+        "ham",
+        "ham",
+        "ham",
+        "ham",
+        "ham",
+        "spam",
+        "spam",
+        "spam",
     ]
     return messages, labels
 
@@ -123,7 +155,7 @@ def train_val_test_split(
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Split data deterministically into stratified train, val, and test partitions."""
     total_test_val = val_size + test_size
-    if total_test_val >= 1.0:
+    if val_size <= 0 or test_size <= 0 or total_test_val >= 1.0:
         raise ValueError("Sum of val_size and test_size must be less than 1.0.")
 
     # First split off test+val
@@ -146,6 +178,32 @@ def train_val_test_split(
     X_test, y_test = X_temp[test_idx], y_temp[test_idx]
 
     return X_train, X_val, X_test, y_train, y_val, y_test
+
+
+def split_text_indices(
+    texts: list[str], labels: list[str], random_state: int = 42
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Assign normalized exact duplicates together in a stratified frozen split."""
+    if len(texts) != len(labels):
+        raise ValueError("Texts and labels must be aligned.")
+    groups: dict[str, list[int]] = {}
+    for i, text in enumerate(texts):
+        key = " ".join(unicodedata.normalize("NFKC", text).casefold().split())
+        groups.setdefault(key, []).append(i)
+    members = list(groups.values())
+    for group in members:
+        if len({labels[i] for i in group}) != 1:
+            raise ValueError("Duplicate texts have conflicting labels.")
+    group_ids = np.arange(len(members))[:, None]
+    group_labels = np.array([labels[g[0]] for g in members])
+    train, val, test, _, _, _ = train_val_test_split(
+        group_ids, group_labels, val_size=0.15, test_size=0.15, random_state=random_state
+    )
+
+    def expand(indices: np.ndarray) -> np.ndarray:
+        return np.array([i for g in indices.ravel() for i in members[int(g)]])
+
+    return expand(train), expand(val), expand(test)
 
 
 def build_text_pipeline(

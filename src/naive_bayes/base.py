@@ -59,6 +59,9 @@ class BaseNaiveBayes(ABC):
                 raise ValueError(f"Expected 2D array for X, got shape {X.shape}")
 
         n_samples, n_features = X.shape
+        values = np.asarray(cast(Any, X).data) if sparse.issparse(X) else np.asarray(X)
+        if not np.all(np.isfinite(values)):
+            raise ValueError("Input features must be finite numeric values.")
         if n_samples == 0:
             raise ValueError("Input feature matrix X contains zero samples.")
         if n_features == 0:
@@ -85,9 +88,7 @@ class BaseNaiveBayes(ABC):
 
         return X, None
 
-    def _setup_classes_and_priors(
-        self, y: np.ndarray
-    ) -> tuple[np.ndarray, np.ndarray]:
+    def _setup_classes_and_priors(self, y: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """Encode labels to indices 0..C-1 and compute class priors."""
         classes, y_indices = np.unique(y, return_inverse=True)
         self.classes_ = classes
@@ -124,6 +125,8 @@ class BaseNaiveBayes(ABC):
         check_is_fitted(self, ["classes_", "class_log_prior_"])
         X_validated, _ = self._validate_data(X, reset=False)
         jll = self._joint_log_likelihood(X_validated)
+        if np.any(np.all(np.isneginf(jll), axis=1)):
+            raise ValueError("Input has zero likelihood under every class; use positive smoothing.")
         log_prob_x = log_sum_exp(jll, axis=1, keepdims=True)
         return cast(np.ndarray, jll - log_prob_x)
 

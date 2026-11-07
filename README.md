@@ -4,15 +4,15 @@
 
 > A tested from-scratch implementation of Gaussian, Multinomial, and Bernoulli Naive Bayes, verified against scikit-learn references.
 
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Creator101-commits/Nai-ve-Bayes--Classifier?include_prereleases)
-![GitHub last commit](https://img.shields.io/github/last-commit/Creator101-commits/Nai-ve-Bayes--Classifier)
-![GitHub issues](https://img.shields.io/github/issues-raw/Creator101-commits/Nai-ve-Bayes--Classifier)
-![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/Creator101-commits/Nai-ve-Bayes--Classifier)
-![GitHub](https://img.shields.io/github/license/Creator101-commits/Nai-ve-Bayes--Classifier)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Creator101-commits/Na-ve-Bayes--Classifier?include_prereleases)
+![GitHub last commit](https://img.shields.io/github/last-commit/Creator101-commits/Na-ve-Bayes--Classifier)
+![GitHub issues](https://img.shields.io/github/issues-raw/Creator101-commits/Na-ve-Bayes--Classifier)
+![GitHub pull requests](https://img.shields.io/github/issues-pr-raw/Creator101-commits/Na-ve-Bayes--Classifier)
+![GitHub](https://img.shields.io/github/license/Creator101-commits/Na-ve-Bayes--Classifier)
 
 This repository contains a tested Python implementation of Gaussian, Multinomial, and Bernoulli Naive Bayes built without reusing scikit-learn's model code. The custom estimators are verified against hand-calculated fixtures and scikit-learn reference behavior while measuring classification quality, calibration, numerical stability, and runtime.
 
-Status: **Estimator implementations and verification complete**. Gaussian, Multinomial, and Bernoulli estimators, mathematical verification suite, scikit-learn parity comparisons, and research reporting are implemented and tested. See [PLAN.md](./PLAN.md) for the full roadmap.
+Status: **Estimator implementations and CPU verification available**. Gaussian, Multinomial, and Bernoulli estimators, mathematical verification suite, scikit-learn parity comparisons, and research reporting are implemented and tested. See [PLAN.md](./PLAN.md) for the full roadmap.
 
 ## Requirements
 
@@ -23,8 +23,8 @@ Status: **Estimator implementations and verification complete**. Gaussian, Multi
 ## Installation
 
 ```sh
-git clone https://github.com/Creator101-commits/Nai-ve-Bayes--Classifier.git
-cd Nai-ve-Bayes--Classifier
+git clone https://github.com/Creator101-commits/Na-ve-Bayes--Classifier.git
+cd Na-ve-Bayes--Classifier
 uv sync --all-groups
 ```
 
@@ -80,7 +80,7 @@ Continuous integration runs linting, strict mypy, and pytest with coverage on Ub
 
 Contributions are welcome. To propose a change:
 
-1. Fork it (<https://github.com/Creator101-commits/Nai-ve-Bayes--Classifier/fork>)
+1. Fork it (<https://github.com/Creator101-commits/Na-ve-Bayes--Classifier/fork>)
 2. Create your feature branch (`git checkout -b feature/fooBar`)
 3. Commit your changes (`git commit -am 'Add some fooBar'`)
 4. Push to the branch (`git push origin feature/fooBar`)
@@ -101,4 +101,14 @@ Distributed under the MIT License. See [`LICENSE`](./LICENSE) for more informati
 
 Sreeharsha Kannegundla
 
-Project link: [https://github.com/Creator101-commits/Nai-ve-Bayes--Classifier](https://github.com/Creator101-commits/Nai-ve-Bayes--Classifier)
+Project link: [https://github.com/Creator101-commits/Na-ve-Bayes--Classifier](https://github.com/Creator101-commits/Na-ve-Bayes--Classifier)
+
+## Data and figure provenance
+
+Iris, Wine, and Breast Cancer are loaded from scikit-learn. The SMS command uses a small embedded demonstration set, not the complete SMS Spam Collection. Normalized exact duplicates are grouped before splitting; text vectorizers fit training data only. The fixed smoothing grid is descriptive and does not select a model using test performance. Near-duplicate detection and larger text benchmarks remain planned.
+
+Gaussian models reject zero-variance likelihoods; probability prediction rejects samples impossible under every class when smoothing is zero. [Naive Bayes reference](https://scikit-learn.org/stable/modules/naive_bayes.html).
+
+## Reproducing the figure
+
+`image.png` contains only Matplotlib graphs. Run `PYTHONPATH=src python scripts/render_figure.py` in a Python environment containing the project dependencies and Matplotlib. The plotting environment is separate from the core runtime when Matplotlib is absent. `scripts/figure-data.json` stores the plotted measurements or analytical inputs. Captions distinguish real packaged datasets, synthetic fixtures, analytical calculations, and local timings. No GPU performance is inferred from CPU demonstrations.

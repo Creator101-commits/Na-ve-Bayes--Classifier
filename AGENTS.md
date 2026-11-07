@@ -5,7 +5,7 @@ A tested Python implementation of Gaussian, Multinomial, and Bernoulli Naïve Ba
 ## Build commands
 
 ```bash
-# Planned after Milestone 1; not runnable yet.
+# Verification commands.
 uv sync
 uv run pytest
 uv run ruff check .

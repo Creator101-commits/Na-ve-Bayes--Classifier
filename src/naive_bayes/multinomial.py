@@ -30,7 +30,7 @@ class MultinomialNB(BaseNaiveBayes):
         priors: np.ndarray | None = None,
     ) -> None:
         super().__init__(priors=priors)
-        if alpha < 0:
+        if not np.isfinite(alpha) or alpha < 0:
             raise ValueError(f"Smoothing parameter alpha must be non-negative, got {alpha}")
         self.alpha = float(alpha)
         self.feature_count_: np.ndarray | None = None
@@ -108,6 +108,21 @@ class MultinomialNB(BaseNaiveBayes):
         check_is_fitted(self, ["feature_log_prob_", "class_log_prior_"])
         assert self.feature_log_prob_ is not None
         assert self.class_log_prior_ is not None
+
+        values = np.asarray(cast(Any, X).data) if sparse.issparse(X) else np.asarray(X)
+        if np.any(values < 0):
+            raise ValueError("Negative values in X are not allowed for MultinomialNB.")
+
+        if self.alpha == 0.0:
+            features = X
+            columns = []
+            for log_prob, prior in zip(self.feature_log_prob_, self.class_log_prior_, strict=True):
+                finite = np.isfinite(log_prob)
+                scores = np.asarray(features @ np.where(finite, log_prob, 0.0)).ravel() + prior
+                impossible = np.asarray(features @ (~finite).astype(float)).ravel() > 0
+                scores[impossible] = -np.inf
+                columns.append(scores)
+            return np.column_stack(columns)
 
         if sparse.issparse(X):
             # Sparse matrix multiplication with (D, C)

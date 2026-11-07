@@ -20,6 +20,7 @@ from naive_bayes.data import (
     load_iris_dataset,
     load_sms_spam_dataset,
     load_wine_dataset,
+    split_text_indices,
     train_val_test_split,
 )
 from naive_bayes.evaluation import (
@@ -103,9 +104,7 @@ def run_continuous_benchmarks() -> dict[str, ReferenceComparisonResult]:
         custom_gnb = GaussianNB(var_smoothing=1e-9)
         ref_gnb = SklearnGaussianNB(var_smoothing=1e-9)
 
-        comp = compare_with_reference(
-            custom_gnb, ref_gnb, X_tr, y_tr, X_te, y_te
-        )
+        comp = compare_with_reference(custom_gnb, ref_gnb, X_tr, y_tr, X_te, y_te)
         results[ds.name] = comp
 
     return results
@@ -115,14 +114,7 @@ def run_text_benchmarks() -> dict[str, dict[str, float]]:
     """Run text classification benchmarks comparing Multinomial and Bernoulli NB."""
     texts, labels = load_sms_spam_dataset()
     y = np.array(labels)
-    n = len(texts)
-    indices = np.arange(n)
-    np.random.seed(42)
-    np.random.shuffle(indices)
-
-    train_n = int(n * 0.7)
-    train_idx = indices[:train_n]
-    test_idx = indices[train_n:]
+    train_idx, _, test_idx = split_text_indices(texts, labels)
 
     train_texts = [texts[i] for i in train_idx]
     test_texts = [texts[i] for i in test_idx]

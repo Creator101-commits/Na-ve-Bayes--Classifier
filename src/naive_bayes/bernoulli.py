@@ -33,17 +33,17 @@ class BernoulliNB(BaseNaiveBayes):
         priors: np.ndarray | None = None,
     ) -> None:
         super().__init__(priors=priors)
-        if alpha < 0:
+        if not np.isfinite(alpha) or alpha < 0:
             raise ValueError(f"Smoothing parameter alpha must be non-negative, got {alpha}")
         self.alpha = float(alpha)
+        if binarize is not None and (not np.isfinite(binarize) or binarize < 0):
+            raise ValueError("binarize must be finite and non-negative, or None.")
         self.binarize = binarize
         self.feature_count_: np.ndarray | None = None
         self.feature_log_prob_: np.ndarray | None = None
         self.neg_feature_log_prob_: np.ndarray | None = None
 
-    def _binarize_data(
-        self, X: np.ndarray | sparse.spmatrix
-    ) -> np.ndarray | sparse.spmatrix:
+    def _binarize_data(self, X: np.ndarray | sparse.spmatrix) -> np.ndarray | sparse.spmatrix:
         """Binarize feature matrix according to self.binarize."""
         if self.binarize is not None:
             if sparse.issparse(X):
@@ -143,6 +143,34 @@ class BernoulliNB(BaseNaiveBayes):
         assert self.class_log_prior_ is not None
 
         X_bin = self._binarize_data(X)
+
+        if self.alpha == 0.0:
+            # Keep sparse text inputs sparse and avoid multiplying zero by infinity.
+            columns = []
+            for positive, negative, prior in zip(
+                self.feature_log_prob_,
+                self.neg_feature_log_prob_,
+                self.class_log_prior_,
+                strict=True,
+            ):
+                finite_pos = np.isfinite(positive)
+                finite_neg = np.isfinite(negative)
+                positive_weights = np.where(finite_pos, positive, 0.0)
+                negative_weights = np.where(finite_neg, negative, 0.0)
+                scores = np.asarray(X_bin @ (positive_weights - negative_weights)).ravel()
+                scores += negative_weights.sum() + prior
+                if sparse.issparse(X_bin):
+                    present_impossible = np.asarray(X_bin @ (~finite_pos).astype(float)).ravel() > 0
+                    missing_impossible = np.asarray(
+                        X_bin @ (~finite_neg).astype(float)
+                    ).ravel() < int(np.sum(~finite_neg))
+                else:
+                    dense = np.asarray(X_bin)
+                    present_impossible = np.any(dense[:, ~finite_pos] > 0, axis=1)
+                    missing_impossible = np.any(dense[:, ~finite_neg] == 0, axis=1)
+                scores[present_impossible | missing_impossible] = -np.inf
+                columns.append(scores)
+            return np.column_stack(columns)
 
         # log P(x | c) = sum [ x_j * (log P(1|c) - log P(0|c)) ] + sum [ log P(0|c) ]
         diff_log_prob = self.feature_log_prob_ - self.neg_feature_log_prob_

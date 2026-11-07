@@ -14,6 +14,7 @@ from naive_bayes.data import (
     load_iris_dataset,
     load_sms_spam_dataset,
     load_wine_dataset,
+    split_text_indices,
     train_val_test_split,
 )
 from naive_bayes.evaluation import compute_classification_metrics
@@ -77,12 +78,12 @@ def train(
         bundle = load_cancer_dataset()
     elif dataset_lower == "sms_spam":
         texts, labels = load_sms_spam_dataset()
-        train_n = int(len(texts) * 0.7)
-        vec, X_tr_text = build_text_pipeline(texts[:train_n])
-        X_te_text = vec.transform(texts[train_n:])
+        train_idx, _, test_idx = split_text_indices(texts, labels)
+        vec, X_tr_text = build_text_pipeline([texts[i] for i in train_idx])
+        X_te_text = vec.transform([texts[i] for i in test_idx])
         y_all = np.asarray(labels)
-        y_tr_text = y_all[:train_n]
-        y_te_text = y_all[train_n:]
+        y_tr_text = y_all[train_idx]
+        y_te_text = y_all[test_idx]
         model = MultinomialNB(alpha=alpha).fit(X_tr_text, y_tr_text)
         acc = model.score(X_te_text, y_te_text)
         typer.echo(f"Trained MultinomialNB on sms_spam: test accuracy = {acc:.4f}")

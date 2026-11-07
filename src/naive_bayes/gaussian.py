@@ -27,7 +27,7 @@ class GaussianNB(BaseNaiveBayes):
         priors: np.ndarray | None = None,
     ) -> None:
         super().__init__(priors=priors)
-        if var_smoothing < 0:
+        if not np.isfinite(var_smoothing) or var_smoothing < 0:
             raise ValueError(f"var_smoothing must be non-negative, got {var_smoothing}")
         self.var_smoothing = float(var_smoothing)
         self.theta_: np.ndarray | None = None
@@ -86,6 +86,11 @@ class GaussianNB(BaseNaiveBayes):
         max_var = float(np.max(global_var)) if global_var.size > 0 else 0.0
         self.epsilon_ = self.var_smoothing * max_var
         self.var_smoothed_ = var + self.epsilon_
+        if np.any(self.var_smoothed_ <= 0):
+            raise ValueError(
+                "Gaussian likelihood requires positive variance; use variable data "
+                "and positive var_smoothing."
+            )
 
         return self
 

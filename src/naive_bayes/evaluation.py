@@ -47,6 +47,7 @@ def compute_expected_calibration_error(
     y_true: np.ndarray,
     y_prob: np.ndarray,
     n_bins: int = 10,
+    classes: np.ndarray | None = None,
 ) -> float:
     """Compute Expected Calibration Error (ECE) across confidence bins.
 
@@ -57,7 +58,9 @@ def compute_expected_calibration_error(
     predictions = np.argmax(y_prob, axis=1)
 
     # Encode y_true to indices if needed
-    classes = np.unique(y_true)
+    classes = np.unique(y_true) if classes is None else np.asarray(classes)
+    if len(classes) != y_prob.shape[1]:
+        raise ValueError("Provide model classes matching probability columns.")
     class_to_idx = {c: i for i, c in enumerate(classes)}
     y_indices = np.array([class_to_idx[y] for y in y_true])
 
@@ -95,12 +98,9 @@ def compute_classification_metrics(
     bal_acc = float(balanced_accuracy_score(y_true, y_pred))
     macro_f1 = float(f1_score(y_true, y_pred, average="macro", zero_division=0))
 
-    try:
-        ll = float(log_loss(y_true, y_prob, labels=classes))
-    except Exception:
-        ll = 0.0
+    ll = float(log_loss(y_true, y_prob, labels=classes))
 
-    ece = compute_expected_calibration_error(y_true, y_prob)
+    ece = compute_expected_calibration_error(y_true, y_prob, classes=classes)
 
     unique_classes = np.unique(y_true) if classes is None else classes
     brier: float | None = None
