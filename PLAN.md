@@ -378,29 +378,29 @@ Implement dense and sparse feature counts, additive smoothing, log feature proba
 Implement binary feature likelihoods, absent-feature contributions, smoothing, and configurable binarization behavior. Test cases that distinguish Bernoulli from Multinomial predictions. Ship the shared text comparison.
 
 ### 6. Data and experiment pipeline
-**Status:** Complete.
+**Status:** Complete (implementation and tests; end-to-end validation runs on Kaggle).
 
-Implement public data acquisition, integrity manifests, duplicate-aware text splits, training-only vectorization, versioned configurations, result artifacts, and environment capture. Add integration tests proving preprocessing cannot fit on validation or test data.
+Public data acquisition is implemented for the SMS Spam Collection (UCI 228, sha256-recorded), the 20 Newsgroups bydate split, and bundled tabular sets. A data manifest records sources, hashes, sizes, per-split and per-class counts, dropped rows, acquisition time, and library versions. Duplicate-aware text splits combine exact normalization with char_wb 5-gram near-duplicate detection (Jaccard >= 0.8) via union-find groups; SMS uses a group-level stratified 70/15/15 split and 20NG keeps its official split with a grouped validation carve and a test-vs-train duplicate audit. Vectorizers fit on the training partition only, and the benchmark writes metrics, manifest, selection tables, and a report.
 
 ### 7. Correctness and numerical-stability audit
 **Status:** Complete.
 
-Build systematic custom-versus-scikit comparisons, probability tolerances, extreme-value tests, constant-feature tests, sparse/dense parity tests, and serialization round trips. Document intentional differences rather than hiding them.
+Systematic custom-versus-scikit comparisons, hand-calculated checks, probability calibration, sparse/dense handling, and edge cases are covered by the test suite. Intentional differences are documented rather than hidden.
 
 ### 8. Controlled research experiments
-**Status:** Complete.
+**Status:** In progress (implemented; awaiting frozen Kaggle results).
 
-Run smoothing, training-size, correlated-feature, and prior-sensitivity studies using frozen protocols. Save all declared seeds and results, including failed or neutral experiments. Produce calibration, performance, agreement, and runtime figures.
+The smoothing grid (alpha x min_df x ngram_range), training-size fractions, correlated-feature stress test, class-prior sensitivity, and runtime studies are implemented and run on validation or synthetic data only. Final numbers are pending the Kaggle benchmark run.
 
 ### 9. Frozen evaluation and failure analysis
-**Status:** Complete.
+**Status:** In progress (implemented; awaiting Kaggle results).
 
-Freeze datasets, partitions, configurations, metric code, and primary comparisons. Evaluate selected settings once on held-out test data, calculate uncertainty, and inspect errors by class, document length, vocabulary coverage, confidence, and feature conditions without retuning.
+The benchmark freezes datasets, partitions, and the validation-selected configurations, writes selection tables before the first test read (enforced by the manifest epoch ordering), refits on the training partition only, and evaluates the held-out test once with bootstrap confidence intervals, per-class metrics, confusion matrices, calibration error, and custom-versus-scikit parity.
 
 ### 10. Final research artifact
-**Status:** Complete.
+**Status:** In progress.
 
-Write a report containing the derivation, implementation decisions, test strategy, datasets, experiments, results, numerical behavior, limitations, and reproducibility instructions. Update the README and AGENTS file so they contain no placeholders, verify every documented command from a clean environment, and tag v1 only after tests, linting, typing, coverage, and report generation pass.
+The benchmark, CLI, Kaggle kernel, and tests are implemented. The curated `results/` outputs, the re-rendered `image.png`, and the final README findings section are pending the Kaggle run outputs so that every reported number traces to a results file.
 
 ## Open questions
 
