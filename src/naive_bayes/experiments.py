@@ -18,7 +18,7 @@ from naive_bayes.data import (
     build_text_pipeline,
     load_cancer_dataset,
     load_iris_dataset,
-    load_sms_spam_dataset,
+    load_sms_fixture,
     load_wine_dataset,
     split_text_indices,
     train_val_test_split,
@@ -112,7 +112,7 @@ def run_continuous_benchmarks() -> dict[str, ReferenceComparisonResult]:
 
 def run_text_benchmarks() -> dict[str, dict[str, float]]:
     """Run text classification benchmarks comparing Multinomial and Bernoulli NB."""
-    texts, labels = load_sms_spam_dataset()
+    texts, labels = load_sms_fixture()
     y = np.array(labels)
     train_idx, _, test_idx = split_text_indices(texts, labels)
 

@@ -10,12 +10,16 @@ import typer
 from naive_bayes import __version__
 from naive_bayes.data import (
     build_text_pipeline,
+    download_sms_spam,
+    fetch_newsgroup_split,
     load_cancer_dataset,
     load_iris_dataset,
-    load_sms_spam_dataset,
+    load_sms_fixture,
     load_wine_dataset,
+    save_text_dataset,
     split_text_indices,
     train_val_test_split,
+    write_data_manifest,
 )
 from naive_bayes.evaluation import compute_classification_metrics
 from naive_bayes.experiments import (
@@ -77,7 +81,7 @@ def train(
     elif dataset_lower == "breast_cancer":
         bundle = load_cancer_dataset()
     elif dataset_lower == "sms_spam":
-        texts, labels = load_sms_spam_dataset()
+        texts, labels = load_sms_fixture()
         train_idx, _, test_idx = split_text_indices(texts, labels)
         vec, X_tr_text = build_text_pipeline([texts[i] for i in train_idx])
         X_te_text = vec.transform([texts[i] for i in test_idx])
@@ -140,6 +144,97 @@ def report(
         typer.echo(f"Wrote report to {output_file}")
     else:
         typer.echo(doc)
+
+
+@app.command("prepare-data")
+def prepare_data(
+    out: Path = typer.Option(..., "--out", help="Output directory for prepared data."),  # noqa: B008
+) -> None:
+    """Download and validate benchmark datasets, writing a data manifest."""
+    from naive_bayes.data import TextDataset
+
+    out.mkdir(parents=True, exist_ok=True)
+    entries: list[dict[str, object]] = []
+
+    # SMS Spam Collection (UCI 228).
+    zip_bytes, sms_meta = download_sms_spam(out)
+    import io
+    import zipfile
+
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
+        names = [n for n in zf.namelist() if n.endswith("SMSSpamCollection")]
+        tsv = zf.read(names[0])
+    from naive_bayes.data import parse_sms_spam_tsv
+
+    sms_texts, sms_labels = parse_sms_spam_tsv(tsv)
+    sms_ds = TextDataset("sms_spam", sms_texts, sms_labels, source=sms_meta["source_url"])
+    save_text_dataset(sms_ds, out / "sms.pkl")
+    entries.append(
+        {
+            "name": "sms_spam",
+            "source_url": sms_meta["source_url"],
+            "sha256": sms_meta["sha256"],
+            "byte_size": sms_meta["byte_size"],
+            "rows": len(sms_texts),
+            "class_counts": {"ham": sms_labels.count("ham"), "spam": sms_labels.count("spam")},
+            "license": "CC BY 4.0",
+        }
+    )
+
+    # 20 Newsgroups bydate.
+    for subset in ("train", "test"):
+        ds = fetch_newsgroup_split(subset)
+        save_text_dataset(ds, out / f"news_{subset}.pkl")
+        entries.append(
+            {
+                "name": f"20newsgroups_{subset}",
+                "source": ds.source,
+                "rows": len(ds.texts),
+                "dropped_empty": ds.dropped_empty,
+                "class_counts": ds.class_counts(),
+            }
+        )
+
+    # Tabular datasets are bundled with scikit-learn (no download).
+    for name, loader in (
+        ("iris", load_iris_dataset),
+        ("wine", load_wine_dataset),
+        ("breast_cancer", load_cancer_dataset),
+    ):
+        bundle = loader()
+        entries.append(
+            {
+                "name": name,
+                "source": "sklearn.datasets (bundled)",
+                "rows": int(len(bundle.y)),
+                "n_features": int(bundle.X.shape[1]),
+                "class_counts": {str(c): int((bundle.y == c).sum()) for c in np.unique(bundle.y)},
+            }
+        )
+
+    write_data_manifest(out / "manifest.json", entries)
+    typer.echo(f"Prepared data written to {out}")
+
+
+@app.command()
+def benchmark(
+    data: Path = typer.Option(..., "--data", help="Directory produced by prepare-data."),  # noqa: B008
+    out: Path = typer.Option(..., "--out", help="Output directory for benchmark artifacts."),  # noqa: B008
+) -> None:
+    """Run the full benchmark: selection, frozen test, metrics, controlled studies."""
+    import subprocess
+
+    from naive_bayes.benchmark import run_benchmark
+
+    try:
+        git_sha = subprocess.run(
+            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+        ).stdout.strip()
+    except Exception:
+        git_sha = "unknown"
+    result = run_benchmark(data, out, git_sha=git_sha)
+    typer.echo(f"Benchmark complete. git_sha={result['manifest']['git_sha']}")
+    typer.echo(f"Artifacts written to {out}")
 
 
 @app.callback()

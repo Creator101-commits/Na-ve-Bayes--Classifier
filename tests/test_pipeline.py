@@ -8,7 +8,7 @@ from naive_bayes.data import (
     build_text_pipeline,
     load_cancer_dataset,
     load_iris_dataset,
-    load_sms_spam_dataset,
+    load_sms_fixture,
     load_wine_dataset,
     train_val_test_split,
 )
@@ -41,7 +41,7 @@ def test_dataset_bundles() -> None:
 
 
 def test_sms_spam_dataset_and_vectorizer() -> None:
-    messages, labels = load_sms_spam_dataset()
+    messages, labels = load_sms_fixture()
     assert len(messages) == len(labels)
     assert "spam" in labels and "ham" in labels
 

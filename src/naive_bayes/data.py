@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import unicodedata
+import urllib.request
+import zipfile
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any
 
 import numpy as np
 from sklearn.datasets import (  # type: ignore[import-untyped]
+    fetch_20newsgroups,
     load_breast_cancer,
     load_iris,
     load_wine,
@@ -63,12 +69,8 @@ def load_cancer_dataset() -> DatasetBundle:
     )
 
 
-def load_sms_spam_dataset() -> tuple[list[str], list[str]]:
-    """Provide a deterministic text dataset for spam/ham classification.
-
-    Includes representative messages across classes with duplicates to test
-    grouping and text vectorization pipelines.
-    """
+def load_sms_fixture() -> tuple[list[str], list[str]]:
+    """Small embedded SMS sample used only as a test fixture (not a benchmark)."""
     messages = [
         "Go until jurong point, crazy.. Available only in bugis great world la e buffet...",
         "Ok lar... Joking wif u oni...",
@@ -215,3 +217,172 @@ def build_text_pipeline(
     vectorizer = CountVectorizer(binary=binary, min_df=min_df)
     X_train = vectorizer.fit_transform(train_texts)
     return vectorizer, X_train
+
+
+# ---------------------------------------------------------------------------
+# Real benchmark datasets (network acquisition happens in prepare-data only).
+# ---------------------------------------------------------------------------
+
+SMS_SPAM_URL = "https://archive.ics.uci.edu/static/public/228/sms+spam+collection.zip"
+SMS_SPAM_MEMBER = "SMSSpamCollection"
+VALID_SMS_LABELS = {"ham", "spam"}
+EXPECTED_SMS_ROWS = 5574
+
+TWENTY_NEWSGROUPS_SUBSETS = ("train", "test")
+TEXT_REMOVE = ("headers", "footers", "quotes")
+
+
+@dataclass
+class TextDataset:
+    """Labeled text collection with per-class counts."""
+
+    name: str
+    texts: list[str]
+    labels: list[str]
+    dropped_empty: int = 0
+    source: str = ""
+
+    def class_counts(self) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for lab in self.labels:
+            counts[lab] = counts.get(lab, 0) + 1
+        return counts
+
+
+def parse_sms_spam_tsv(tsv_bytes: bytes) -> tuple[list[str], list[str]]:
+    """Parse the SMSSpamCollection TSV (label \\t text) with validation."""
+    text = tsv_bytes.decode("utf-8", errors="replace")
+    messages: list[str] = []
+    labels: list[str] = []
+    for lineno, line in enumerate(text.splitlines(), start=1):
+        line = line.rstrip("\n")
+        if not line:
+            continue
+        if "\t" not in line:
+            raise ValueError(f"SMS row {lineno} missing tab separator: {line[:60]!r}")
+        label, body = line.split("\t", 1)
+        label = label.strip().lower()
+        if label not in VALID_SMS_LABELS:
+            raise ValueError(f"SMS row {lineno} has invalid label {label!r}")
+        if not body.strip():
+            raise ValueError(f"SMS row {lineno} has empty text")
+        labels.append(label)
+        messages.append(body)
+    if len(messages) != EXPECTED_SMS_ROWS:
+        raise ValueError(
+            f"Expected {EXPECTED_SMS_ROWS} SMS rows, parsed {len(messages)}"
+        )
+    counts = {lab: labels.count(lab) for lab in VALID_SMS_LABELS}
+    if counts.get("ham") != 4827 or counts.get("spam") != 747:
+        raise ValueError(f"Unexpected SMS class counts: {counts}")
+    return messages, labels
+
+
+def download_sms_spam(out_dir: Any) -> tuple[bytes, dict[str, Any]]:
+    """Download the UCI SMS Spam Collection zip and return (zip_bytes, meta)."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    req = urllib.request.Request(SMS_SPAM_URL, headers={"User-Agent": "naive-bayes-benchmark"})
+    with urllib.request.urlopen(req, timeout=120) as resp:  # noqa: S310
+        blob = resp.read()
+    sha = hashlib.sha256(blob).hexdigest()
+    meta = {
+        "source_url": SMS_SPAM_URL,
+        "sha256": sha,
+        "byte_size": len(blob),
+        "acquired_at": datetime.now(UTC).isoformat(),
+    }
+    (out_dir / "sms_spam_collection.zip").write_bytes(blob)
+    return blob, meta
+
+
+def load_sms_spam_collection(zip_path: Any) -> TextDataset:
+    """Load SMS Spam Collection from a local zip archive."""
+    with zipfile.ZipFile(zip_path) as zf:
+        names = [n for n in zf.namelist() if n.endswith(SMS_SPAM_MEMBER)]
+        if not names:
+            raise ValueError(f"{SMS_SPAM_MEMBER} not found in {zip_path}")
+        tsv = zf.read(names[0])
+    messages, labels = parse_sms_spam_tsv(tsv)
+    return TextDataset(name="sms_spam", texts=messages, labels=labels, source=str(zip_path))
+
+
+def fetch_newsgroup_split(
+    subset: str,
+    fetcher: Any = fetch_20newsgroups,
+) -> TextDataset:
+    """Fetch the official bydate 20 Newsgroups split, dropping empty docs."""
+    if subset not in TWENTY_NEWSGROUPS_SUBSETS:
+        raise ValueError(f"subset must be one of {TWENTY_NEWSGROUPS_SUBSETS}")
+    raw: Any = fetcher(subset=subset, remove=TEXT_REMOVE)
+    texts_all = [str(t) for t in raw.data]
+    labels_all = [str(c) for c in raw.target]
+    texts: list[str] = []
+    labels: list[str] = []
+    dropped = 0
+    for t, lab in zip(texts_all, labels_all, strict=True):
+        if t.strip():
+            texts.append(t)
+            labels.append(lab)
+        else:
+            dropped += 1
+    return TextDataset(
+        name=f"20newsgroups_{subset}",
+        texts=texts,
+        labels=labels,
+        dropped_empty=dropped,
+        source="sklearn.datasets.fetch_20newsgroups(subset=bydate)",
+    )
+
+
+def library_versions() -> dict[str, str]:
+    """Record versions of the libraries that produced the data."""
+    import contextlib
+    import importlib.metadata as md
+
+    out: dict[str, str] = {}
+    for name in ("numpy", "scipy", "pandas", "scikit-learn"):
+        with contextlib.suppress(md.PackageNotFoundError):
+            out[name] = md.version(name)
+    return out
+
+
+def write_data_manifest(path: Any, entries: list[dict[str, Any]]) -> None:
+    """Write the data manifest JSON (sources, hashes, counts, versions)."""
+    manifest = {
+        "generated_at": datetime.now(UTC).isoformat(),
+        "library_versions": library_versions(),
+        "datasets": entries,
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+
+def save_text_dataset(ds: TextDataset, path: Any) -> None:
+    """Persist a text dataset as a pickle for the benchmark stage."""
+    import pickle
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "name": ds.name,
+        "texts": ds.texts,
+        "labels": ds.labels,
+        "dropped_empty": ds.dropped_empty,
+        "source": ds.source,
+    }
+    with open(path, "wb") as fh:
+        pickle.dump(payload, fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def load_text_dataset(path: Any) -> TextDataset:
+    """Load a persisted text dataset."""
+    import pickle
+
+    with open(path, "rb") as fh:
+        payload = pickle.load(fh)
+    return TextDataset(
+        name=payload["name"],
+        texts=payload["texts"],
+        labels=payload["labels"],
+        dropped_empty=payload.get("dropped_empty", 0),
+        source=payload.get("source", ""),
+    )
