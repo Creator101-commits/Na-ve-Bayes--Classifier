@@ -104,11 +104,33 @@ bnb.fit(X_binary, y_train)
 
 ## Results
 
-Curated benchmark outputs are stored under [`results/`](./results/) and are copied unedited from the Kaggle run. The benchmark writes `metrics.json`, `manifest.json`, per-config selection CSVs under `selection/`, and `report.md`. Every number reported in the README traces to a file in `results/`.
+Curated benchmark outputs are stored under [`results/`](./results/) and are copied unedited from the Kaggle run (`git_sha` `ac5aafdf82d3594c3077674cbbaac57136bdc173`, protocol `naive-bayes-benchmark-v2`). The benchmark writes `metrics.json`, `manifest.json`, `analysis_plan.json`, per-config selection CSVs under `selection/`, and `report.md`. Every number reported in the README traces to a file in `results/`.
+
+Frozen test metrics for the validation-selected configs (95% bootstrap CIs, 2,000 resamples, seed 0):
+
+| dataset | model | n_test | accuracy | balanced acc | macro-F1 [CI] | log loss | ECE [CI] |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| sms_spam | multinomial | 820 | 0.9878 | 0.9664 | 0.9735 [0.9560, 0.9887] | 0.1483 | 0.0097 [0.0047, 0.0185] |
+| sms_spam | bernoulli | 820 | 0.9866 | 0.9505 | 0.9701 [0.9509, 0.9872] | 0.1316 | 0.0111 [0.0055, 0.0200] |
+| 20newsgroups | multinomial | 7317 | 0.6583 | 0.6472 | 0.6353 [0.6251, 0.6454] | 7.9965 | 0.3124 [0.3017, 0.3231] |
+| 20newsgroups | bernoulli | 7317 | 0.5610 | 0.5487 | 0.5487 [0.5372, 0.5594] | 8.6387 | 0.3902 [0.3787, 0.4011] |
+
+Selected configs: SMS MNB alpha 0.3, min_df 1, ngram (1,2); SMS BNB alpha 0.1, min_df 2, ngram (1,1); 20NG MNB alpha 0.01, min_df 1, ngram (1,2); 20NG BNB alpha 0.01, min_df 2, ngram (1,1). The 20NG secondary test (63 near/exact duplicates of train removed, n=7254) gives macro-F1 0.6344 (MNB) and 0.5477 (BNB), essentially unchanged from the primary split.
+
+Gaussian tabular (10 seeded 70/30 splits, mean accuracy [95% t-interval]): iris 0.9489 [0.9179, 0.9798], wine 0.9741 [0.9672, 0.9809], breast_cancer 0.9427 [0.9333, 0.9521]. Custom-versus-sklearn parity is exact on every text and tabular test entry (prediction agreement 1.0, max probability difference at most 1.1e-11).
 
 ## Findings
 
-Findings are drawn from the frozen test metrics, validation selection tables, and controlled studies in `results/`. They are reported with bootstrap confidence intervals and, where relevant, paired MNB-versus-BNB comparisons and custom-versus-scikit-learn parity. Neutral or negative results are reported as observed.
+- **SMS Spam is close to saturated for both models.** Macro-F1 is 0.9735 (MNB) and 0.9701 (BNB) with tight intervals, and ECE is about 0.01, so probabilities are well calibrated on this binary task. The paired MNB-minus-BNB macro-F1 difference is +0.0035 with CI [-0.0135, +0.0205], so the two models are statistically indistinguishable here.
+- **MultinomialNB is clearly better on 20 Newsgroups.** Macro-F1 is 0.6353 versus 0.5487 for BernoulliNB, and the paired difference +0.0866 has CI [+0.0760, +0.0972], excluding zero. Counts carry more information than binary presence for 20-class text.
+- **20NG probabilities are poorly calibrated.** ECE is 0.312 (MNB) and 0.390 (BNB), roughly 30-40x the SMS values. The confidence-bin slices show why: 90.8% of MNB test predictions (6,646 of 7,317) and 82.7% of BNB predictions (6,054 of 7,317) land in the top bin, where accuracy is 0.697 and 0.631 against mean confidence near 1.00. The models are accurate-ish but overconfident on the harder task.
+- **Duplicate control did not move 20NG results.** Dropping the 63 test documents that are exact or near duplicates of train (of 7,317) changes macro-F1 by 0.0009 (MNB: 0.6353 to 0.6344) and 0.0010 (BNB: 0.5487 to 0.5477), so near-duplicates are not driving the headline numbers.
+- **GaussianNB matches sklearn exactly.** Parity agreement is 1.0 with max probability differences around 1e-15 on iris, wine, and breast_cancer across all 10 splits.
+- **More training data helps steadily but with diminishing returns.** On SMS validation, MNB macro-F1 rises from 0.876 at 5% of train to 0.978 at 100%; on 20NG the curves are still rising at full train size. All points are validation-only, seeds 0-4.
+- **The naive assumption fails visibly under duplicated features.** In the synthetic correlated-feature stress test, GaussianNB ECE grows from 0.023 at k=0 to 0.183 at k=8 while LogisticRegression stays near 0.024: exact feature copies inflate confidence without adding information. This is a synthetic stress test, not a real-data claim.
+- **Learned class priors matter for spam precision.** On SMS validation, switching to uniform priors drops spam precision from 0.990 to 0.886 (MNB) and from 0.980 to 0.962 (BNB) at roughly unchanged recall, so the learned prior is doing real work on the imbalanced task.
+- **Custom inference is faster than sklearn.** Median fit+predict on 20NG validation is 0.57s versus 1.10s for MNB and 0.044s versus 0.064s for BNB (median of 5 repeats).
+- **Failure modes concentrate in short 20NG documents.** Test accuracy by document-length tertile rises from 0.334 to 0.715 (BNB) and 0.535 to 0.754 (MNB) across tertiles, and OOV-rate tertiles show a milder gradient; details are in `results/report.md`.
 
 ## Reproduction
 

@@ -10,12 +10,18 @@ Added real-data loaders for the SMS Spam Collection (UCI 228, CC BY 4.0, sha256 
 
 ## Verified locally
 
-- 64 tests passed, including SMS TSV parsing and validation errors, near-duplicate Jaccard and union-find grouping, vectorizer fit-on-train-only, selection tie-breaks, bootstrap determinism and paired-difference sign, a hand-computed ECE, the correlated-feature generator, and a benchmark end-to-end run on fixture data that writes every artifact.
+- 72 tests passed, including SMS TSV parsing and validation errors, near-duplicate Jaccard and union-find grouping, vectorizer fit-on-train-only, selection tie-breaks, bootstrap determinism and paired-difference sign, a hand-computed ECE, the correlated-feature generator, majority-label determinism for duplicate groups, the subset guard on mixed-label groups, GIT_SHA propagation to the benchmark manifest, gzipped-header detection, and a benchmark end-to-end run on fixture data that writes every artifact.
 - `ruff check .` passed.
 - `mypy src` passed (13 source files).
 - Real downloads verified locally: SMS Spam Collection parsed to 5,574 rows (4,827 ham, 747 spam) and 20 Newsgroups fetched (11,014 train with 300 empty dropped, 7,317 test with 215 empty dropped).
 - The 35-message embedded SMS set is retained only as a test fixture under `load_sms_fixture`.
 
+## Kaggle benchmark
+
+Kernel `sreeharshak101/naive-bayes-classifier-benchmark` completed on `ac5aafd` (protocol `naive-bayes-benchmark-v2`). The manifest records `ordering_ok: true` (selection CSVs and `analysis_plan.json` written before the first test read), no NaN training-size values, and `analysis_plan_sha256`. Curated outputs live in `results/` (metrics.json, manifest.json, analysis_plan.json, report.md, selection CSVs, copied unedited); `image.png` and `scripts/figure-data.json` are rendered from `results/` by `scripts/render_figure.py`.
+
+Two kernel defects were found and fixed before the successful run: a group-label accounting mismatch in the training-size guard (fixed by a shared deterministic `group_majority_label` helper) and missing GIT_SHA propagation that left `manifest.git_sha` as `unknown` (fixed by exporting GIT_SHA from the wrapper and preferring it in the CLI). Earlier kernel versions that errored are retained under `artifacts/kaggle/` for provenance and were not curated.
+
 ## Limits
 
-The full-scale benchmark numbers are produced by the Kaggle kernel `sreeharshak101/naive-bayes-classifier-benchmark`; curated `results/` outputs, the re-rendered `image.png`, and the README findings section are pending that run so every reported number traces to a results file. New CI workflows are configuration changes; their hosted execution must be checked after publication.
+New CI workflows are configuration changes; their hosted execution must be checked after publication.

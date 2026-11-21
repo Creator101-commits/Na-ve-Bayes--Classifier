@@ -388,19 +388,19 @@ Public data acquisition is implemented for the SMS Spam Collection (UCI 228, sha
 Systematic custom-versus-scikit comparisons, hand-calculated checks, probability calibration, sparse/dense handling, and edge cases are covered by the test suite. Intentional differences are documented rather than hidden.
 
 ### 8. Controlled research experiments
-**Status:** In progress (implemented; awaiting frozen Kaggle results).
+**Status:** Complete (Kaggle run `ac5aafd`, results in `results/`).
 
-The smoothing grid (alpha x min_df x ngram_range), training-size fractions, correlated-feature stress test, class-prior sensitivity, and runtime studies are implemented and run on validation or synthetic data only. Final numbers are pending the Kaggle benchmark run.
+The smoothing grid (alpha x min_df x ngram_range), training-size fractions, correlated-feature stress test, class-prior sensitivity, and runtime studies ran on validation or synthetic data only. Curated outputs are in `results/metrics.json` under `controlled/`.
 
 ### 9. Frozen evaluation and failure analysis
-**Status:** In progress (implemented; awaiting Kaggle results).
+**Status:** Complete (Kaggle run `ac5aafd`, results in `results/`).
 
-The benchmark freezes datasets, partitions, and the validation-selected configurations, writes selection tables before the first test read (enforced by the manifest epoch ordering), refits on the training partition only, and evaluates the held-out test once with bootstrap confidence intervals, per-class metrics, confusion matrices, calibration error, and custom-versus-scikit parity.
+The benchmark froze datasets, partitions, and the validation-selected configurations, wrote selection tables before the first test read (enforced by the manifest epoch ordering, `ordering_ok: true`), refit on the training partition only, and evaluated the held-out test once with bootstrap confidence intervals, per-class metrics, confusion matrices, calibration error, failure-analysis slices, and custom-versus-scikit parity.
 
 ### 10. Final research artifact
-**Status:** In progress.
+**Status:** Complete.
 
-The benchmark, CLI, Kaggle kernel, and tests are implemented. The curated `results/` outputs, the re-rendered `image.png`, and the final README findings section are pending the Kaggle run outputs so that every reported number traces to a results file.
+The benchmark, CLI, Kaggle kernel, tests, curated `results/` outputs, the re-rendered `image.png`, and the README findings section are complete; every reported number traces to a file in `results/` from Kaggle run `ac5aafd`.
 
 ## Open questions
 
