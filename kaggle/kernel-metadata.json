@@ -1,0 +1,14 @@
+{
+  "id": "sreeharshak101/naive-bayes-classifier-benchmark",
+  "title": "Naive Bayes Classifier Benchmark",
+  "code_file": "run_kaggle.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": "true",
+  "enable_gpu": "false",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": ["sreeharshak101/naive-bayes-classifier-src"],
+  "competition_sources": [],
+  "kernel_sources": []
+}
