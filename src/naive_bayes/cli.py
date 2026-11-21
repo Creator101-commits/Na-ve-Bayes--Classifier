@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -226,12 +227,14 @@ def benchmark(
 
     from naive_bayes.benchmark import run_benchmark
 
-    try:
-        git_sha = subprocess.run(
-            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
-        ).stdout.strip()
-    except Exception:
-        git_sha = "unknown"
+    git_sha = os.environ.get("GIT_SHA", "")
+    if not git_sha:
+        try:
+            git_sha = subprocess.run(
+                ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+            ).stdout.strip()
+        except Exception:
+            git_sha = "unknown"
     result = run_benchmark(data, out, git_sha=git_sha)
     typer.echo(f"Benchmark complete. git_sha={result['manifest']['git_sha']}")
     typer.echo(f"Artifacts written to {out}")

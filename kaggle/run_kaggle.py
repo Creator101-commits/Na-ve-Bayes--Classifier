@@ -9,6 +9,7 @@ Installs ``naive_bayes`` from the pinned source dataset uploaded by
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -90,6 +91,7 @@ def main() -> None:
 
     git_sha = _git_sha()
     print(f"git_sha={git_sha}", flush=True)
+    os.environ["GIT_SHA"] = git_sha
 
     _run([sys.executable, "-m", "naive_bayes.cli", "prepare-data", "--out", str(DATA)])
     _run(

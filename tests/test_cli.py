@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from naive_bayes.cli import app
@@ -55,3 +56,22 @@ def test_cli_report(tmp_path: Path) -> None:
     assert out_file.exists()
     content = out_file.read_text(encoding="utf-8")
     assert "Mathematical Verification" in content
+
+
+def test_cli_benchmark_prefers_git_sha_env(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The benchmark command must honor GIT_SHA set by the Kaggle wrapper."""
+    captured: dict[str, str] = {}
+
+    def fake_run(data: Path, out: Path, git_sha: str = "unknown") -> dict:
+        captured["git_sha"] = git_sha
+        return {"manifest": {"git_sha": git_sha}}
+
+    monkeypatch.setattr("naive_bayes.benchmark.run_benchmark", fake_run)
+    monkeypatch.setenv("GIT_SHA", "abc123")
+    res = runner.invoke(
+        app, ["benchmark", "--data", str(tmp_path), "--out", str(tmp_path / "out")]
+    )
+    assert res.exit_code == 0
+    assert captured["git_sha"] == "abc123"
