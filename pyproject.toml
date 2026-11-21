@@ -5,7 +5,7 @@ description = "Tested from-scratch implementations of Gaussian, Multinomial, and
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Sreeharsha Kannegundla" }]
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.12,<3.14"
 dependencies = [
     "numpy>=2.1",
     "scipy>=1.14",
