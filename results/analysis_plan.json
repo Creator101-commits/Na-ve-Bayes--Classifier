@@ -1,0 +1,135 @@
+{
+  "seed": 42,
+  "datasets": [
+    "sms_spam",
+    "20newsgroups"
+  ],
+  "model_kinds": [
+    "multinomial",
+    "bernoulli"
+  ],
+  "selected_configs": {
+    "sms_spam": {
+      "multinomial": {
+        "model": "multinomial",
+        "alpha": 0.3,
+        "min_df": 1,
+        "ngram_range": [
+          1,
+          2
+        ]
+      },
+      "bernoulli": {
+        "model": "bernoulli",
+        "alpha": 0.1,
+        "min_df": 2,
+        "ngram_range": [
+          1,
+          1
+        ]
+      }
+    },
+    "20newsgroups": {
+      "multinomial": {
+        "model": "multinomial",
+        "alpha": 0.01,
+        "min_df": 1,
+        "ngram_range": [
+          1,
+          2
+        ]
+      },
+      "bernoulli": {
+        "model": "bernoulli",
+        "alpha": 0.01,
+        "min_df": 2,
+        "ngram_range": [
+          1,
+          1
+        ]
+      }
+    }
+  },
+  "constants": {
+    "near_dup_threshold": 0.8,
+    "ece_bins": 15,
+    "bootstrap": {
+      "resamples": 2000,
+      "seed": 0
+    },
+    "selection_grid": {
+      "alphas": [
+        0.01,
+        0.03,
+        0.1,
+        0.3,
+        1.0,
+        3.0
+      ],
+      "min_dfs": [
+        1,
+        2,
+        5
+      ],
+      "ngram_ranges": [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    "gaussian": {
+      "var_smoothing": 1e-09,
+      "n_splits": 10,
+      "test_size": 0.3
+    },
+    "training_size": {
+      "fractions": [
+        0.05,
+        0.1,
+        0.25,
+        0.5,
+        1.0
+      ],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "correlated_feature": {
+      "ks": [
+        0,
+        1,
+        2,
+        4,
+        8
+      ],
+      "n": 5000,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "runtime": {
+      "repeats": 5,
+      "eval_partition": "validation"
+    },
+    "sms_split": {
+      "val_fraction": 0.15,
+      "test_fraction": 0.15
+    },
+    "news_split": {
+      "val_fraction": 0.15
+    }
+  }
+}
