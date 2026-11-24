@@ -53,19 +53,15 @@ def test_unfitted_model_errors() -> None:
 
 def test_input_validation_errors() -> None:
     gnb = GaussianNB()
-    # 1D X error
     with pytest.raises(ValueError, match="Expected 2D array"):
         gnb.fit(np.array([1.0, 2.0]), np.array([0, 1]))
 
-    # Empty samples
     with pytest.raises(ValueError, match="zero samples"):
         gnb.fit(np.empty((0, 2)), np.empty(0))
 
-    # Length mismatch
     with pytest.raises(ValueError, match="Sample count mismatch"):
         gnb.fit(np.array([[1.0, 2.0], [3.0, 4.0]]), np.array([0]))
 
-    # Target 2D
     with pytest.raises(ValueError, match="Expected 1D target array"):
         gnb.fit(np.array([[1.0, 2.0]]), np.array([[0]]))
 
@@ -74,15 +70,12 @@ def test_user_supplied_priors_validation() -> None:
     X = np.array([[1.0, 2.0], [3.0, 4.0]])
     y = np.array([0, 1])
 
-    # Prior length mismatch
     with pytest.raises(ValueError, match="Number of priors"):
         GaussianNB(priors=np.array([0.5, 0.3, 0.2])).fit(X, y)
 
-    # Negative priors
     with pytest.raises(ValueError, match="non-negative"):
         GaussianNB(priors=np.array([-0.2, 1.2])).fit(X, y)
 
-    # Priors do not sum to 1
     with pytest.raises(ValueError, match="must sum to 1.0"):
         GaussianNB(priors=np.array([0.4, 0.4])).fit(X, y)
 
@@ -92,7 +85,6 @@ def test_feature_mismatch_on_predict() -> None:
     y_train = np.array([0, 1])
     gnb = GaussianNB().fit(X_train, y_train)
 
-    # Predict with 3 features instead of 2
     X_test = np.array([[1.0, 2.0, 3.0]])
     with pytest.raises(ValueError, match="Feature count mismatch"):
         gnb.predict(X_test)

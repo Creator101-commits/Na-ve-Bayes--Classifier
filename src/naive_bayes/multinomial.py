@@ -58,7 +58,6 @@ class MultinomialNB(BaseNaiveBayes):
         X_validated, y_arr = self._validate_data(X, y, reset=True)
         assert y_arr is not None
 
-        # Check for negative values
         if sparse.issparse(X_validated):
             sp_data = np.asarray(cast(Any, X_validated).data)
             if sp_data.size > 0 and np.any(sp_data < 0):
@@ -86,7 +85,6 @@ class MultinomialNB(BaseNaiveBayes):
 
         self.feature_count_ = feature_count
 
-        # Compute smoothed log probabilities:
         # P(x_j | c) = (count_jc + alpha) / (sum_c + alpha * n_features)
         smoothed_fc = feature_count + self.alpha
         smoothed_cc = np.sum(smoothed_fc, axis=1, keepdims=True)

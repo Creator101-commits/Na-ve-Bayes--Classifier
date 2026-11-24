@@ -59,7 +59,6 @@ def compute_expected_calibration_error(
     confidences = np.max(y_prob, axis=1)
     predictions = np.argmax(y_prob, axis=1)
 
-    # Encode y_true to indices if needed
     classes = np.unique(y_true) if classes is None else np.asarray(classes)
     if len(classes) != y_prob.shape[1]:
         raise ValueError("Provide model classes matching probability columns.")

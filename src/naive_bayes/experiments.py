@@ -131,15 +131,12 @@ def run_text_benchmarks() -> dict[str, dict[str, float]]:
     results: dict[str, dict[str, float]] = {}
 
     for alpha in [0.01, 0.1, 0.5, 1.0, 2.0]:
-        # Custom models
         c_mnb = MultinomialNB(alpha=alpha).fit(X_train_count, y_train)
         c_bnb = BernoulliNB(alpha=alpha, binarize=None).fit(X_train_bin, y_train)
 
-        # Scikit-learn references
         r_mnb = SklearnMultinomialNB(alpha=alpha).fit(X_train_count, y_train)
         r_bnb = SklearnBernoulliNB(alpha=alpha, binarize=None).fit(X_train_bin, y_train)
 
-        # Check agreements
         mnb_agree = float(np.mean(c_mnb.predict(X_test_count) == r_mnb.predict(X_test_count)))
         bnb_agree = float(np.mean(c_bnb.predict(X_test_bin) == r_bnb.predict(X_test_bin)))
 

@@ -12,7 +12,6 @@ from naive_bayes.gaussian import GaussianNB
 
 
 def test_gaussian_hand_calculated_parameters() -> None:
-    # 2 classes, 2 features
     X = np.array([
         [1.0, 10.0],
         [3.0, 12.0],
@@ -69,7 +68,6 @@ def test_gaussian_parity_with_sklearn(dataset_loader: object) -> None:
     X = np.asarray(data.data, dtype=np.float64)
     y = np.asarray(data.target, dtype=np.int64)
 
-    # Use fixed split
     np.random.seed(42)
     indices = np.random.permutation(len(X))
     split = int(0.75 * len(X))
@@ -83,11 +81,9 @@ def test_gaussian_parity_with_sklearn(dataset_loader: object) -> None:
     custom_pred = custom.predict(X_test)
     ref_pred = ref.predict(X_test)
 
-    # Predictions must match reference scikit-learn
     agreement = np.mean(custom_pred == ref_pred)
     assert agreement >= 0.98
 
-    # Probabilities should match very closely
     custom_proba = custom.predict_proba(X_test)
     ref_proba = ref.predict_proba(X_test)
     assert np.allclose(custom_proba, ref_proba, atol=1e-4)

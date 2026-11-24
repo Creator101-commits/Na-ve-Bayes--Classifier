@@ -160,14 +160,12 @@ def train_val_test_split(
     if val_size <= 0 or test_size <= 0 or total_test_val >= 1.0:
         raise ValueError("Sum of val_size and test_size must be less than 1.0.")
 
-    # First split off test+val
     sss1 = StratifiedShuffleSplit(n_splits=1, test_size=total_test_val, random_state=random_state)
     train_idx, temp_idx = next(sss1.split(X, y))
 
     X_train, y_train = X[train_idx], y[train_idx]
     X_temp, y_temp = X[temp_idx], y[temp_idx]
 
-    # Then split temp into val and test
     val_relative_size = val_size / total_test_val
     sss2 = StratifiedShuffleSplit(
         n_splits=1,

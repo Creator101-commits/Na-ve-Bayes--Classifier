@@ -59,7 +59,6 @@ def test_bernoulli_nonbinary_input_error_when_no_binarize() -> None:
 
 def test_bernoulli_parity_with_sklearn() -> None:
     np.random.seed(42)
-    # Generate binary matrix: 50 samples, 10 features, 2 classes
     X = np.random.binomial(n=1, p=0.3, size=(50, 10))
     y = np.random.choice([0, 1], size=50)
 

@@ -62,7 +62,6 @@ def test_train_val_test_split() -> None:
     assert len(X_tr) == 30
     assert len(X_val) == 10
     assert len(X_te) == 10
-    # Stratified balance check
     assert sum(y_tr == 0) == 15
     assert sum(y_val == 0) == 5
     assert sum(y_te == 0) == 5

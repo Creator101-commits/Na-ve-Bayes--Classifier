@@ -115,7 +115,6 @@ def test_jaccard_hand_computed() -> None:
     found = {(i, j) for i, j, _ in pairs}
     assert (0, 1) in found
     assert (0, 2) not in found and (1, 2) not in found
-    # Exact jaccard value for identical texts is 1.0.
     same = near_duplicate_pairs(["abcde fghij", "abcde fghij"], threshold=0.5)
     assert same and same[0][2] == pytest.approx(1.0)
 
@@ -184,7 +183,6 @@ def test_stratified_group_subset_keeps_groups_whole() -> None:
     frac = 0.6  # round(5 * 0.6) = 3 groups kept per class
     sub = stratified_group_subset(indices, labels, group_ids, frac, seed=7)
     sub_set = set(int(i) for i in sub)
-    # Exactly 3 distinct groups per class.
     for cls in ("x", "y"):
         cls_gids = {int(group_ids[i]) for i in sub if labels[i] == cls}
         assert len(cls_gids) == 3
@@ -193,7 +191,6 @@ def test_stratified_group_subset_keeps_groups_whole() -> None:
         members = {int(i) for i in indices if int(group_ids[i]) == gid}
         inside = members & sub_set
         assert inside == set() or inside == members
-    # Deterministic per seed.
     sub2 = stratified_group_subset(indices, labels, group_ids, frac, seed=7)
     assert set(int(i) for i in sub2) == sub_set
     # A different seed may pick different groups but still 3 per class.
@@ -282,8 +279,7 @@ def test_assert_subset_ok_uses_majority_group_labels() -> None:
 
     # A valid frac=0.15 subset: 4 pure-a groups + 1 pure-b group (docs 0-3, 70).
     sub = np.array([0, 1, 2, 3, 70], dtype=np.int64)
-    _assert_subset_ok(sub, 0.15, split, ds)  # must not raise
-
+    _assert_subset_ok(sub, 0.15, split, ds)
 
 # ---------------------------------------------------------------------------
 # Vectorizer fit-on-train-only
@@ -321,7 +317,6 @@ def test_selection_prefers_higher_macro_f1_then_lower_logloss() -> None:
     best, table = select_text_config(train_texts, y_train, val_texts, y_val, "multinomial")
     assert best.model == "multinomial"
     assert len(table) == len(ALPHAS) * len(MIN_DFS) * len(NGRAM_RANGES)
-    # The best row must have the max macro-F1 in the table.
     best_f1 = max(r["macro_f1"] for r in table if not r.get("skipped"))
     chosen = [r for r in table if r["alpha"] == best.alpha and r["min_df"] == best.min_df
               and int(r["ngram_min"]) == best.ngram_range[0]]
@@ -358,7 +353,6 @@ def test_selection_records_skipped_empty_vocab() -> None:
     # Every min_df >= 2 cell is skipped; only min_df == 1 is selectable.
     assert all(int(r["min_df"]) >= 2 for r in skipped)
     assert best.min_df == 1
-    # The winning row is a real (non-skipped) cell.
     assert not any(r.get("skipped") and r["alpha"] == best.alpha
                    and int(r["min_df"]) == best.min_df for r in table)
 
@@ -422,7 +416,7 @@ def test_correlated_feature_generator() -> None:
     a = _correlated_feature_stress()
     b = _correlated_feature_stress()
     assert a["synthetic"] is True
-    assert a["rows"] == b["rows"]  # deterministic
+    assert a["rows"] == b["rows"]
     ks = [int(r["k"]) for r in a["rows"]]
     assert ks == [0, 1, 2, 4, 8]
     # n=5000, seeds 0-4 baked in; each row reports gnb + lr metrics.
@@ -480,14 +474,12 @@ def test_benchmark_end_to_end(tmp_path) -> None:
     assert "20newsgroups_nodup_multinomial" in met["text_test"]
     assert "gaussian_tabular" in met
     assert "correlated_feature" in met["controlled"]
-    # Training-size curves are populated (no NaN) for both datasets/models.
     for ds_name in ("sms_spam", "20newsgroups"):
         for model in ("multinomial", "bernoulli"):
             rows = met["controlled"]["training_size"][ds_name][model]
             assert len(rows) == 5
             for r in rows:
                 assert np.isfinite(r["macro_f1_mean"]), (ds_name, model, r)
-    # Failure analysis is present on the primary text-test entries.
     fa = met["text_test"]["20newsgroups_multinomial"]["failure_analysis"]
     assert "by_length_tertile" in fa and "by_oov_tertile" in fa
     assert "by_confidence_bin" in fa and "most_confused_pairs" in fa

@@ -837,8 +837,7 @@ def run_benchmark(data_dir: Path, out_dir: Path, git_sha: str = "unknown") -> di
                  "macro_f1", "log_loss", "skipped", "reason"],
             )
 
-    # Freeze the analysis plan (selected configs + all constants) and record
-    # the epoch at which the plan was written, before any test read.
+    # Freeze the plan and record the epoch before any test read.
     plan = _analysis_plan(selected_configs)
     plan_bytes = (json.dumps(plan, indent=2) + "\n").encode()
     (out_dir / "analysis_plan.json").write_bytes(plan_bytes)

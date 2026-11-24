@@ -53,7 +53,6 @@ class BernoulliNB(BaseNaiveBayes):
                 return cast(sparse.spmatrix, X_bin)
             return np.asarray(self.binarize < X, dtype=np.float64)
 
-        # If binarize is None, verify values are binary
         if sparse.issparse(X):
             sp_data = np.asarray(cast(Any, X).data)
             if sp_data.size > 0 and not np.all(np.isin(sp_data, [0.0, 1.0])):
@@ -107,7 +106,6 @@ class BernoulliNB(BaseNaiveBayes):
 
         self.feature_count_ = feature_count
 
-        # Compute smoothed probabilities:
         # P(x_j = 1 | c) = (feature_count + alpha) / (class_count + 2 * alpha)
         # P(x_j = 0 | c) = (class_count - feature_count + alpha) / (class_count + 2 * alpha)
         smoothed_cc = self.class_count_[:, np.newaxis] + self.alpha * 2.0

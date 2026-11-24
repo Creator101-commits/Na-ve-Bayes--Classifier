@@ -18,7 +18,6 @@ def test_multinomial_negative_features_rejected() -> None:
     with pytest.raises(ValueError, match="Negative values in X are not allowed"):
         mnb.fit(X, y)
 
-    # Sparse check
     X_sp = sparse.csr_matrix([[1.0, -2.0], [3.0, 4.0]])
     with pytest.raises(ValueError, match="Negative values in X are not allowed"):
         mnb.fit(X_sp, y)
@@ -51,7 +50,6 @@ def test_multinomial_hand_calculated_probabilities() -> None:
 
 def test_multinomial_parity_with_sklearn() -> None:
     np.random.seed(42)
-    # Generate random word counts: 60 samples, 20 features, 3 classes
     X = np.random.poisson(lam=2.0, size=(60, 20))
     y = np.random.choice([0, 1, 2], size=60)
 
