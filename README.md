@@ -106,6 +106,34 @@ bnb.fit(X_binary, y_train)
 
 Curated benchmark outputs are stored under [`results/`](./results/) and are copied unedited from the Kaggle run (`git_sha` `ac5aafdf82d3594c3077674cbbaac57136bdc173`, protocol `naive-bayes-benchmark-v2`). The benchmark writes `metrics.json`, `manifest.json`, `analysis_plan.json`, per-config selection CSVs under `selection/`, and `report.md`. Every number reported in the README traces to a file in `results/`.
 
+![Naive Bayes benchmark results: test macro-F1 and ECE, training-size curves, correlated-feature stress test, 20 Newsgroups confusion matrix and reliability diagram](image.png)
+
+### What the figure shows
+
+- (a) Frozen test macro-F1: both SMS models sit near 0.97 with tight
+  intervals, while on 20 Newsgroups multinomial reaches 0.635 and
+  bernoulli 0.549; colors are shared with panels (c) and (d).
+- (b) Frozen test ECE: SMS is well calibrated at about 0.01 for both
+  models, but 20NG ECE is 0.312 (MNB) and 0.390 (BNB), roughly 30-40
+  times worse.
+- (c) Training-size study: validation macro-F1 rises steadily with
+  the training fraction on a log axis for all four dataset-model
+  pairs, and the 20NG curves are still climbing at full train size.
+- (d) Correlated-feature stress test: GaussianNB ECE grows from 0.023
+  at k=0 to 0.183 at k=8 exact feature copies, while the logistic
+  reference stays flat at about 0.024.
+- (e) Row-normalized 20NG confusion matrix (multinomial): the diagonal
+  averages 0.65 of each true class, but class 2 collapses to 0.03
+  recall with 155 of its 379 test documents predicted as class 3.
+- (f) Reliability diagram: accuracy sits below mean confidence in 14
+  of 15 bins, and 90.8% of test predictions (6,646 of 7,317) land in
+  the top bin at confidence 0.998 versus accuracy 0.697.
+
+MultinomialNB is clearly better than BernoulliNB on 20 Newsgroups
+(+0.087 macro-F1, paired CI excludes zero), the two are
+indistinguishable on SMS spam, and 20NG probabilities are badly
+overconfident even where accuracy is reasonable.
+
 Frozen test metrics for the validation-selected configs (95% bootstrap CIs, 2,000 resamples, seed 0):
 
 | dataset | model | n_test | accuracy | balanced acc | macro-F1 [CI] | log loss | ECE [CI] |
@@ -162,7 +190,7 @@ CI runs lint, strict mypy, and pytest on Ubuntu and macOS for Python 3.12 and 3.
 
 ## Reproducing the figure
 
-`image.png` is rendered from `results/` by `scripts/render_figure.py` using `scripts/figure-data.json`. Run it in a Python environment containing the project dependencies and Matplotlib. Panels show test macro-F1 with confidence intervals per (dataset, model), a reliability/ECE comparison, training-size curves, and correlated-feature ECE versus k.
+`image.png` is rendered from `results/` by `scripts/render_figure.py`. Run `uv run --with matplotlib python scripts/render_figure.py` from the repository root in an environment containing the project dependencies. Panels show test macro-F1 and ECE per (dataset, model) with bootstrap intervals, validation training-size curves, correlated-feature ECE versus k, a row-normalized 20 Newsgroups multinomial confusion matrix, and a reliability diagram with marker area by confidence-bin count.
 
 ## License
 
