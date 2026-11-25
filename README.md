@@ -1,6 +1,6 @@
 # Naive Bayes Classifier
 
-> Naive Bayes written from scratch: 0.97 macro-F1 on SMS spam, matching scikit-learn to 11 decimal places.
+> Naive Bayes from scratch
 
 Can a naive Bayes classifier written from scratch still hold up on real
 text? This project implements Gaussian, multinomial and Bernoulli naive
@@ -82,15 +82,3 @@ uv run naive-bayes benchmark --data data --out artifacts/benchmark
 ```
 
 `scripts/kaggle_run.sh` reproduces the same run on Kaggle CPU.
-
-## Notes
-
-- Custom estimators do the learning; scikit-learn is a reference
-  implementation for agreement checks only.
-- Data: SMS Spam Collection v.1 (UCI 228, CC BY 4.0) and 20 Newsgroups
-  bydate; iris, wine and breast_cancer are bundled with scikit-learn.
-- The 35-message embedded SMS set is a test fixture only, not a
-  benchmark.
-- Protocol `naive-bayes-benchmark-v2`, SMS split seed 42, bootstrap
-  2,000 resamples seed 0. Curated kernel output is in `results/`, and
-  `image.png` is rendered from it.
